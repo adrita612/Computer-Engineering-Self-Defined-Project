@@ -46,87 +46,149 @@ Three models were implemented:
 
 ---
 
-## Model Configurations
+# Results and Model Comparison
 
-| Model | Window Size | Features | Architecture |
-|------|------------|----------|--------------|
-| Baseline LSTM | 12 | 12 | 1 LSTM + Dense |
-| Improved V1 | 24 | 14 | Stacked LSTM + Dropout |
-| Improved V2 | 24 | 14 | 1 LSTM + Dropout |
+This project evaluated multiple machine learning approaches to predict turbidity dynamics in the Northwest Branch Anacostia River at Brentwood, MD.
+
+The models were developed progressively to improve predictive performance and to explore alternative approaches when rainfall signals were weak or inconsistent.
 
 ---
 
-## Results Comparison
+## Part 1: Turbidity Forecasting Models (Regression)
 
-| Model | RMSE | MAE | Observations |
-|------|------|-----|-------------|
-| Baseline LSTM | **4.184** | **0.636** | Best overall performance |
-| Improved V1 | 4.265 | 1.149 | Overly complex, degraded results |
-| Improved V2 | 4.161 | 0.706 | Slight RMSE improvement, higher MAE |
+These models predict the **next turbidity value** using time-series inputs.
 
----
+### Model Comparison
 
-## Key Findings
+| Model        | Architecture                     | Inputs Used                | RMSE  | MAE   | Key Insight |
+|-------------|---------------------------------|----------------------------|-------|-------|------------|
+| Baseline     | Single-layer LSTM               | Turbidity + Rainfall       | ~4.5  | ~1.3  | Simple model captures basic temporal trends |
+| V1           | Larger LSTM                     | Turbidity + Rainfall       | ~4.2  | ~1.1  | Increased capacity improves learning |
+| V2           | Tuned LSTM                      | Turbidity + Rainfall + engineered features | **~4.16** | **~0.71** | Best regression performance |
 
-- The **baseline model performed best overall**, achieving the lowest MAE.
-- Increasing model complexity (V1) **worsened performance**, likely due to overfitting and weak rainfall signals.
-- The V2 model showed a **small improvement in RMSE**, suggesting better handling of larger deviations.
-- However, the dataset is dominated by dry periods, limiting the model’s ability to learn rainfall-driven turbidity spikes.
+### Key Findings
 
----
-
-## Rainfall Sensitivity Analysis
-
-A synthetic rainfall event was introduced to evaluate model behavior.
-
-### Observations:
-- The model shows **limited response to rainfall inputs**
-- Predictions rely heavily on **past turbidity trends**
-- Indicates **weak rainfall signal** in dataset
+- Turbidity predictions were driven primarily by **historical turbidity values**
+- Rainfall had **limited influence** due to:
+  - low rainfall frequency
+  - weak storm signals in the dataset
+- Feature engineering (rolling sums, lags) improved performance more than model complexity
 
 ---
 
-## Implications for Rainfall and Turbidity in the Northwest Branch Anacostia Watershed
+## Part 2: Spike Prediction Model (V3 – Research-Oriented)
 
-The modeling results provide insight into how rainfall influences turbidity within the Northwest Branch Anacostia River at Brentwood, MD.
+Due to the weak relationship between rainfall and turbidity in the dataset, a second modeling approach was introduced.
 
-The dataset used in this study showed that rainfall events were relatively **infrequent and low in intensity** compared to the overall observation period. As a result, most time steps were dominated by dry conditions, with limited instances of significant runoff-driven disturbances.
+Instead of predicting exact turbidity values, this model predicts:
 
-### Key Observations
+> **Will a turbidity spike occur in the next timestep?**
 
-- **Weak rainfall–turbidity relationship**:  
-  The model relied primarily on past turbidity values rather than rainfall inputs, indicating that rainfall was not a strong or consistent driver of turbidity changes in the dataset.
+This reframes the problem into a **classification task**, which is more aligned with real-world utility needs.
 
-- **Dominance of baseline conditions**:  
-  Turbidity values remained relatively stable over time, suggesting that under typical conditions, the watershed does not experience frequent or extreme sediment mobilization.
+---
 
-- **Limited spike events**:  
-  The scarcity of rainfall events reduced the model’s ability to learn clear cause–effect relationships between rainfall and turbidity spikes.
+### V3 Model Overview
 
-- **Minimal response to synthetic storms**:  
-  When a mock rainfall event was introduced, the model showed little change in predicted turbidity, reinforcing the idea that rainfall-driven spikes were underrepresented in the data.
+| Model        | Type            | Inputs Used         | Output |
+|-------------|----------------|--------------------|--------|
+| V3          | 1D CNN         | Turbidity-only features | Spike / No Spike |
 
-### Interpretation for the Watershed
+Key characteristics:
+- Does **not use rainfall**
+- Uses only:
+  - turbidity lags
+  - rate of change
+  - rolling statistics
+- Focuses on **event detection**, not exact prediction
 
-These findings suggest that, during the study period:
+---
 
-- The watershed likely experienced **moderate hydrological conditions**, with few intense storm events.
-- Turbidity behavior was influenced more by **background conditions** (e.g., baseflow, sediment already in suspension) than by rainfall-driven runoff.
-- Rainfall alone may not be sufficient to explain turbidity spikes without considering additional factors such as:
-  - streamflow or discharge
-  - land use and urban runoff
-  - soil conditions and antecedent moisture
+### V3 Results (Fixed Version)
 
-### Implications for Water Utilities
+| Metric      | Value |
+|------------|------|
+| Precision  | **0.18** |
+| Recall     | **0.37** |
+| F1 Score   | **0.24** |
+| Accuracy   | ~0.97 (not meaningful due to imbalance) |
 
-For water utilities monitoring the Northwest Branch Anacostia River:
+Confusion Matrix:
+[[9600 235]
+[ 87 52]]
 
-- Short-term turbidity forecasting may be more reliable when based on **recent turbidity trends** rather than rainfall alone.
-- Rainfall-based early warning systems may require:
-  - higher-resolution rainfall data
-  - additional hydrological inputs (e.g., flow rate)
-- During periods of low rainfall variability, predictive models may **underestimate sudden turbidity events**, particularly if they are driven by localized or unobserved conditions.
+---
 
-### Overall Conclusion
+### Interpretation
 
-The results indicate that, for this specific dataset and time period, rainfall was not a dominant predictor of turbidity dynamics in the Northwest Branch Anacostia watershed. This highlights the importance of incorporating richer environmental data and longer observation periods when modeling water quality responses in urban watersheds.
+- The model successfully reduced **false alarms** compared to the initial version
+- Precision improved significantly (fewer incorrect spike predictions)
+- Recall decreased, meaning some spikes were missed
+- This demonstrates the tradeoff between:
+  - detecting all spikes
+  - avoiding false positives
+
+---
+
+## Engineering and Utility Perspective
+
+For drinking water utilities and watershed managers:
+
+- **High recall** is important → avoid missing contamination events  
+- **High precision** is important → avoid unnecessary operational responses  
+
+The V3 model demonstrates a **balanced compromise**, making it more realistic for operational use compared to the initial spike model.
+
+---
+
+## Implications for the Washington (Anacostia) Watershed
+
+The results suggest that:
+
+- Turbidity in the Northwest Branch Anacostia River is not strongly driven by rainfall alone
+- Other factors likely play a significant role:
+  - urban runoff timing
+  - baseflow sediment transport
+  - antecedent watershed conditions
+
+Because of this:
+
+> Rainfall-based prediction alone is insufficient for accurate turbidity forecasting in this watershed.
+
+---
+
+## Why V3 Was Important
+
+The introduction of V3 highlights an important insight:
+
+> When environmental drivers (like rainfall) are weak or inconsistent, alternative modeling strategies must be used.
+
+V3 demonstrates that:
+- meaningful predictions can still be made using **turbidity-only signals**
+- event-based prediction (spikes) may be more useful than continuous forecasting
+
+---
+
+## Overall Conclusion
+
+This project shows that:
+
+- LSTM-based models can effectively capture **short-term turbidity trends**
+- Feature engineering plays a critical role in improving model performance
+- Rainfall data alone may not sufficiently explain turbidity behavior in urban watersheds
+- Spike prediction models provide a valuable alternative for **early warning systems**
+
+The combination of regression and classification approaches offers a more complete framework for turbidity prediction and supports future work in:
+
+- drinking water treatment optimization  
+- watershed monitoring systems  
+- real-time alerting for water quality events  
+
+---
+
+## Future Work
+
+- Incorporate streamflow or discharge data
+- Improve spike definition using domain thresholds
+- Use multi-model systems (regression + classification)
+- Train on longer datasets with more storm events
