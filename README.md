@@ -184,11 +184,21 @@ The combination of regression and classification approaches offers a more comple
 - watershed monitoring systems  
 - real-time alerting for water quality events  
 
----
+## Overall Conclusion
 
-## Future Work
+This project demonstrates that machine learning models, particularly LSTM-based architectures, can effectively capture short-term temporal patterns in turbidity data. The baseline and improved regression models were able to predict general turbidity behavior with reasonable accuracy, showing that turbidity persistence is a dominant factor in short-term forecasting.
 
-- Incorporate streamflow or discharge data
-- Improve spike definition using domain thresholds
-- Use multi-model systems (regression + classification)
-- Train on longer datasets with more storm events
+However, the results also highlight a critical limitation: **rainfall alone was not a strong predictor of turbidity in this dataset**. Despite incorporating rainfall features and increasing model complexity, improvements were marginal. This indicates that turbidity dynamics in the Northwest Branch Anacostia watershed are influenced by a combination of factors beyond rainfall, including urban runoff timing, sediment availability, and antecedent conditions.
+
+To address this limitation, the problem was reframed in Part 2 as a spike detection task. The V3 model demonstrated that even without rainfall inputs, meaningful predictions can be made using turbidity-derived features alone. While the model exhibited a tradeoff between precision and recall, it successfully reduced false alarms and provided a more operationally realistic approach for detecting significant turbidity events.
+
+From an engineering and utility perspective, this work reinforces several key insights:
+
+- Accurate turbidity forecasting is not solely a modeling challenge, but a **data and system understanding problem**
+- Simpler models can outperform more complex architectures when environmental signals are weak
+- Event-based prediction (spike detection) may be more valuable than continuous prediction for real-world applications
+- Model tuning must balance **false positives vs missed events**, especially for drinking water operations
+
+Overall, this project illustrates that combining regression-based forecasting with classification-based spike detection provides a more complete and practical framework for turbidity prediction. While the current models are constrained by data limitations, the methodology establishes a strong foundation for future work in watershed monitoring, early warning systems, and drinking water treatment optimization.
+
+Future improvements should focus on integrating richer hydrological data (e.g., streamflow, runoff characteristics), extending the dataset to include more storm events, and refining event-based modeling approaches to better capture rare but critical turbidity spikes.
