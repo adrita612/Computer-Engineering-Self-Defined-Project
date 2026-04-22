@@ -64,12 +64,12 @@ These models predict the **next turbidity value** using time-series inputs.
 |-------------|---------------------------------|----------------------------|-------|-------|------------|
 | Baseline     | Single-layer LSTM               | Turbidity + Rainfall       | ~4.5  | ~1.3  | Simple model captures basic temporal trends |
 | V1           | Larger LSTM                     | Turbidity + Rainfall       | ~4.2  | ~1.1  | Increased capacity improves learning |
-| V2           | Tuned LSTM                      | Turbidity + Rainfall + engineered features | **~4.16** | **~0.71** | Best regression performance |
+| V2           | Tuned LSTM                      | Turbidity + Rainfall + engineered features | ~4.16 | ~0.71 | Best regression performance |
 
 ### Key Findings
 
-- Turbidity predictions were driven primarily by **historical turbidity values**
-- Rainfall had **limited influence** due to:
+- Turbidity predictions were driven primarily by historical turbidity values
+- Rainfall had limited influence due to:
   - low rainfall frequency
   - weak storm signals in the dataset
 - Feature engineering (rolling sums, lags) improved performance more than model complexity
@@ -84,7 +84,7 @@ Instead of predicting exact turbidity values, this model predicts:
 
 > **Will a turbidity spike occur in the next timestep?**
 
-This reframes the problem into a **classification task**, which is more aligned with real-world utility needs.
+This reframes the problem into a classification task, which is more aligned with real-world utility needs.
 
 ---
 
@@ -95,7 +95,7 @@ This reframes the problem into a **classification task**, which is more aligned 
 | V3          | 1D CNN         | Turbidity-only features | Spike / No Spike |
 
 Key characteristics:
-- Does **not use rainfall**
+- Does not use rainfall
 - Uses only:
   - turbidity lags
   - rate of change
@@ -164,7 +164,7 @@ The introduction of V3 highlights an important insight:
 > When environmental drivers (like rainfall) are weak or inconsistent, alternative modeling strategies must be used.
 
 V3 demonstrates that:
-- meaningful predictions can still be made using **turbidity-only signals**
+- meaningful predictions can still be made using turbidity-only signals
 - event-based prediction (spikes) may be more useful than continuous forecasting
 
 ---
@@ -188,16 +188,16 @@ The combination of regression and classification approaches offers a more comple
 
 This project demonstrates that machine learning models, particularly LSTM-based architectures, can effectively capture short-term temporal patterns in turbidity data. The baseline and improved regression models were able to predict general turbidity behavior with reasonable accuracy, showing that turbidity persistence is a dominant factor in short-term forecasting.
 
-However, the results also highlight a critical limitation: **rainfall alone was not a strong predictor of turbidity in this dataset**. Despite incorporating rainfall features and increasing model complexity, improvements were marginal. This indicates that turbidity dynamics in the Northwest Branch Anacostia watershed are influenced by a combination of factors beyond rainfall, including urban runoff timing, sediment availability, and antecedent conditions.
+However, the results also highlight a critical limitation: rainfall alone was not a strong predictor of turbidity in this dataset. Despite incorporating rainfall features and increasing model complexity, improvements were marginal. This indicates that turbidity dynamics in the Northwest Branch Anacostia watershed are influenced by a combination of factors beyond rainfall, including urban runoff timing, sediment availability, and antecedent conditions.
 
 To address this limitation, the problem was reframed in Part 2 as a spike detection task. The V3 model demonstrated that even without rainfall inputs, meaningful predictions can be made using turbidity-derived features alone. While the model exhibited a tradeoff between precision and recall, it successfully reduced false alarms and provided a more operationally realistic approach for detecting significant turbidity events.
 
 From an engineering and utility perspective, this work reinforces several key insights:
 
-- Accurate turbidity forecasting is not solely a modeling challenge, but a **data and system understanding problem**
+- Accurate turbidity forecasting is not solely a modeling challenge, but a data and system understanding problem
 - Simpler models can outperform more complex architectures when environmental signals are weak
 - Event-based prediction (spike detection) may be more valuable than continuous prediction for real-world applications
-- Model tuning must balance **false positives vs missed events**, especially for drinking water operations
+- Model tuning must balance false positives vs missed events, especially for drinking water operations
 
 Overall, this project illustrates that combining regression-based forecasting with classification-based spike detection provides a more complete and practical framework for turbidity prediction. While the current models are constrained by data limitations, the methodology establishes a strong foundation for future work in watershed monitoring, early warning systems, and drinking water treatment optimization.
 
